@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import List, Optional
 from main import hw_info, system_lang
+from graphic import screen_resolutions
 from language import Translator
 import os
 import graphic as gr
@@ -10,6 +11,7 @@ import time
 from anbernic import Anbernic
 from bezels import Bezels
 
+ver="v1.1"
 translator = Translator(system_lang)
 selected_position = 0
 roms_selected_position = 0
@@ -19,14 +21,9 @@ an = Anbernic()
 bezels = Bezels()
 skip_input_check = False
 
-screen_size = {
-    1: (720, 720, 18),
-    2: (720, 480, 11)
-}
+x_size, y_size, max_elem = screen_resolutions.get(hw_info, (640, 480, 11))
 
-x_size, y_size ,max_elem = screen_size.get(hw_info, (640, 480, 11))
-
-button_x = x_size - 110
+button_x = x_size - 120
 button_y = y_size - 30
 ratio = y_size / x_size
 
@@ -34,7 +31,7 @@ ratio = y_size / x_size
 def start():
     print("[INFO]Starting Custom Bezel Manager...")
     gr.draw_log(
-        f"{translator.translate('welcome')}", fill=gr.colorBlue, outline=gr.colorBlueD1
+        f"{translator.translate('Welcome')}", fill=gr.colorBlue, outline=gr.colorBlueD1
     )
     gr.draw_paint()
     time.sleep(2)
@@ -81,7 +78,7 @@ def load_console_menu() -> None:
             selected_system = available_systems[selected_position]
             current_window = "cfg"
             gr.draw_log(
-                f"{translator.translate('log_01')}", fill=gr.colorBlue, outline=gr.colorBlueD1
+                f"{translator.translate('Checking bezel config file...')}", fill=gr.colorBlue, outline=gr.colorBlueD1
             )
             gr.draw_paint()
             skip_input_check = True
@@ -94,7 +91,7 @@ def load_console_menu() -> None:
     gr.draw_clear()
 
     gr.draw_rectangle_r([10, 40, x_size - 10, y_size - 40], 15, fill=gr.colorGrayD2, outline=None)
-    gr.draw_text((x_size / 2, 20), f"{translator.translate('title_label_01')}", 17, anchor="mm")
+    gr.draw_text((x_size / 2, 20), f"{translator.translate('Bezel Custom Manager')} {ver}", 17, anchor="mm")
 
     if len(available_systems) > 1:
         start_idx = int(selected_position / max_elem) * max_elem
@@ -103,14 +100,14 @@ def load_console_menu() -> None:
             row_list(
                 system, (20, 50 + (i * 35)), x_size - 40, i == (selected_position % max_elem)
             )
-        button_circle((30, button_y), "A", f"{translator.translate('button_label_01')}")
+        button_circle((20, button_y), "A", f"{translator.translate('Select')}")
     else:
         gr.draw_text(
-            (x_size / 2, y_size / 2), f"{translator.translate('message_01')} {an.get_sd_storage()}", anchor="mm"
+            (x_size / 2, y_size / 2), f"{translator.translate('No config file found in SD')} {an.get_sd_storage()}", anchor="mm"
         )
 
-    button_circle((button_x - 100, button_y), "Y", f"{translator.translate('button_label_02')}")
-    button_circle((button_x, button_y), "M", f"{translator.translate('button_label_03')}")
+    button_circle((button_x - 110, button_y), "Y", f"{translator.translate('Help')}")
+    button_circle((button_x, button_y), "M", f"{translator.translate('Exit')}")
 
     gr.draw_paint()
 
@@ -136,7 +133,7 @@ def load_cfg_menu() -> None:
         current_window = "console"
         selected_system = ""
         gr.draw_log(
-            f"{translator.translate('log_02')}", fill=gr.colorBlue, outline=gr.colorBlueD1
+            f"{translator.translate('No config file found...')}", fill=gr.colorBlue, outline=gr.colorBlueD1
         )
         gr.draw_paint()
         time.sleep(2)
@@ -148,13 +145,13 @@ def load_cfg_menu() -> None:
     elif input.key("X"):
         rom = roms_list[roms_selected_position]
         cfg_file = f"{cfg_path}/{selected_system}.cfg"
-        gr.draw_log(f"{translator.translate('log_05')}", fill=gr.colorBlue, outline=gr.colorBlueD1)
+        gr.draw_log(f"{translator.translate('Resetting...')}", fill=gr.colorBlue, outline=gr.colorBlueD1)
         gr.draw_paint()
         if os.path.exists(cfg_file):
             os.remove(cfg_file)
         time.sleep(1)
         gr.draw_log(
-            f"{translator.translate('log_06-1')} {selected_system} {translator.translate('log_06-2')} default", fill=gr.colorBlue, outline=gr.colorBlueD1
+            f"{translator.translate('Reset bezel for')} {selected_system} {translator.translate('to')} default", fill=gr.colorBlue, outline=gr.colorBlueD1
         )
         gr.draw_paint()
         time.sleep(3)
@@ -196,13 +193,13 @@ def load_cfg_menu() -> None:
         img_file=f"{system_path}/{overlay_value}"
         if os.path.exists(img_file):
             cfg_file = f"{cfg_path}/{selected_system}.cfg"
-            gr.draw_log(f"{translator.translate('log_03')}", fill=gr.colorBlue, outline=gr.colorBlueD1)
+            gr.draw_log(f"{translator.translate('Setting...')}", fill=gr.colorBlue, outline=gr.colorBlueD1)
             gr.draw_paint()
             with open(cfg_file, 'w') as file_object:
                 file_object.write(f"{bezel_file}\n")
             time.sleep(1)
             gr.draw_log(
-                f"{selected_system} {translator.translate('log_04')} {rom.name}", fill=gr.colorBlue, outline=gr.colorBlueD1
+                f"{selected_system} {translator.translate('bezel set to')} {rom.name}", fill=gr.colorBlue, outline=gr.colorBlueD1
             )
             gr.draw_paint()
             time.sleep(3)
@@ -230,8 +227,8 @@ def load_cfg_menu() -> None:
     gr.draw_rectangle_r([10, 40, x_size - 10, y_size - 40], 15, fill=gr.colorGray, outline=None)
     gr.draw_text(
         (x_size / 2, 20),
-        f"{selected_system} - {translator.translate('title_label_02-1')}: {len(roms_list)} | {translator.translate('title_label_02-2')}: {overlay_name}",
-        17,
+        f"{selected_system} - {translator.translate('bezels')}: {len(roms_list)} | {translator.translate('Current Settings')}: {overlay_name}",
+        15,
         anchor="mm",
     )
 
@@ -260,13 +257,13 @@ def load_cfg_menu() -> None:
         gr.display_image(img_file, target_x = int(x_size / 2 + 10), target_y = int(y_size / 4), target_width = int(x_size / 2 - 30), target_height = int((x_size / 2 - 30) * ratio))
     else:
         gr.draw_log(
-            f"{translator.translate('log_07')}", fill=gr.colorBlue, outline=gr.colorBlueD1
+            f"{translator.translate('The .cfg file has an issue and cannot be used!')}", fill=gr.colorBlue, outline=gr.colorBlueD1
         )
 
-    button_circle((30, button_y), "A", f"{translator.translate('button_label_04')}")
-    button_circle((130, button_y), "B", f"{translator.translate('button_label_05')}")
-    button_circle((230, button_y), "X", f"{translator.translate('button_label_06')}")
-    button_circle((button_x, button_y), "M", f"{translator.translate('button_label_03')}")
+    button_circle((20, button_y), "A", f"{translator.translate('Apply')}")
+    button_circle((160, button_y), "B", f"{translator.translate('Back')}")
+    button_circle((280, button_y), "X", f"{translator.translate('Reset')}")
+    button_circle((button_x, button_y), "M", f"{translator.translate('Exit')}")
 
     gr.draw_paint()
 
@@ -282,14 +279,14 @@ def load_help_menu() -> None:
     gr.draw_clear()
 
     gr.draw_rectangle_r([10, 40, x_size - 10, y_size - 40], 15, fill=gr.colorGrayL1, outline=None)
-    gr.draw_text((x_size / 2, 20), f"{translator.translate('title_label_03')}", anchor="mm")
+    gr.draw_text((x_size / 2, 20), f"{translator.translate('-Help-')}", anchor="mm")
 
     gr.draw_text(
         (x_size / 2, y_size / 2), f"{translator.translate('message_02-1')}\n{translator.translate('message_02-2')}\n{translator.translate('message_02-3')}", anchor="mm"
     )
 
-    button_circle((30, button_y), "B", f"{translator.translate('button_label_05')}")
-    button_circle((button_x, button_y), "M", f"{translator.translate('button_label_03')}")
+    button_circle((20, button_y), "B", f"{translator.translate('Back')}")
+    button_circle((button_x, button_y), "M", f"{translator.translate('Exit')}")
 
     gr.draw_paint()
 
